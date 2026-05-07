@@ -69,6 +69,10 @@
         background: #28a745;
       }
 
+      button.reset {
+        background: #6c757d;
+      }
+
       button:hover {
         opacity: 0.9;
       }
@@ -97,11 +101,7 @@
       <h1>Product Name Generator</h1>
 
       <label>Brand</label>
-      <select id="brand">
-        <option>Timberland Pro</option>
-        <option>Muck</option>
-        <option>Durango</option>
-      </select>
+      <select id="brand"></select>
 
       <label>Series (type or choose)</label>
       <input
@@ -109,83 +109,25 @@
         id="series"
         placeholder="Enter or select series"
       />
-      <datalist id="seriesList">
-        <option>ACCESSORY</option>
-        <option>ALPHA PURSUIT</option>
-        <option>APEX</option>
-        <option>APEX PRO</option>
-        <option>ARCTIC ADVENTURE</option>
-        <option>ARCTIC APRES</option>
-        <option>ARCTIC GRIP</option>
-        <option>ARCTIC PRO</option>
-        <option>ARCTIC SPORT</option>
-        <option>ARCTIC SPORT II</option>
-        <option>ARCTIC WEEKEND</option>
-        <option>CALDER</option>
-        <option>CHORE</option>
-        <option>CHORE CLASSIC</option>
-        <option>CHORE COOL</option>
-        <option>CHORE FARM LEATHER</option>
-        <option>CHORE MAX</option>
-        <option>DERBY</option>
-        <option>EDGEWATER</option>
-        <option>ELEMENT</option>
-        <option>EXCURSION</option>
-        <option>FIELDBLAZER</option>
-        <option>FORAGER</option>
-        <option>HALE</option>
-        <option>HARVESTER</option>
-        <option>LEATHER ORIGINALS</option>
-        <option>LIBERTY</option>
-        <option>MINI MUCK</option>
-        <option>MUCK APPAREL</option>
-        <option>PATHFINDER</option>
-        <option>MUCKMASTER</option>
-        <option>MUCKSTER II</option>
-        <option>MUCKSTER LITE</option>
-        <option>MUDDER</option>
-        <option>MY FIRST MUCK</option>
-        <option>ORIGINALS</option>
-        <option>OUTPOST</option>
-        <option>OUTSCAPE</option>
-        <option>OUTSCAPE MAX</option>
-        <option>RAINSCAPE</option>
-        <option>ROVER II</option>
-        <option>RUGGED II</option>
-        <option>WETLAND</option>
-        <option>WOODY</option>
-      </datalist>
+      <datalist id="seriesList"></datalist>
 
       <label>Descriptor (optional)</label>
       <input
         type="text"
         id="descriptor"
-        placeholder="e.g. Athletic, BOA True Grit"
+        placeholder="e.g. ATHLETIC, BOA TRUE GRIT"
       />
 
-      <div class="checkbox-group">
-        <label><input type="checkbox" id="ev" /> EV</label>
-        <label><input type="checkbox" id="pullOn" /> Pull-On</label>
-        <label><input type="checkbox" id="waterproof" /> Waterproof</label>
-      </div>
+      <label>Size (inches)</label>
+      <input type="number" id="sizeInches" placeholder="e.g. 12" />
+
+      <div class="checkbox-group" id="featuresBox"></div>
 
       <label>Toe Type</label>
-      <select id="toeType">
-        <option value="">None</option>
-        <option>Composite Toe</option>
-        <option>Steel Toe</option>
-        <option>Soft Toe</option>
-        <option>Alloy Toe</option>
-      </select>
+      <select id="toeType"></select>
 
       <label>Category</label>
-      <select id="category">
-        <option>Boot</option>
-        <option>Work Boot</option>
-        <option>Work Sneaker</option>
-        <option>Work Shoe</option>
-        <option>Oxford</option>
-      </select>
+      <select id="category"></select>
 
       <label>Product Code</label>
       <input type="text" id="code" placeholder="Enter product code" />
@@ -193,6 +135,7 @@
       <div class="actions">
         <button onclick="generateName()">Generate</button>
         <button class="secondary" onclick="copyToClipboard()">Copy</button>
+        <button class="reset" onclick="resetExceptBrand()">Reset</button>
       </div>
 
       <div class="output" id="output">Your product name will appear here</div>
@@ -200,38 +143,134 @@
     </div>
 
     <script>
+      const brands = ["Timberland Pro", "Muck", "Durango"];
+
+      const toeTypes = [
+        "",
+        "Composite Toe",
+        "Steel Toe",
+        "Soft Toe",
+        "Alloy Toe",
+      ];
+
+      const categories = [
+        "Boot",
+        "Work Boot",
+        "Work Sneaker",
+        "Work Shoe",
+        "Oxford",
+        "Ankle Boot",
+        "Mid Boot",
+        "Tall Boot",
+        "Max Boot",
+      ];
+
+      const features = ["EV", "Pull-On", "Waterproof"];
+
+      const seriesByBrand = {
+        Muck: [
+          "Accessory",
+          "Alpha Pursuit",
+          "Apex",
+          "Apex Pro",
+          "Arctic Adventure",
+          "Arctic Apres",
+          "Arctic Grip",
+          "Arctic Pro",
+          "Arctic Sport",
+          "Arctic Sport II",
+          "Arctic Weekend",
+          "Calder",
+          "Chore",
+          "Chore Classic",
+          "Chore Cool",
+          "Chore Farm Leather",
+          "Chore Max",
+          "Derby",
+          "Edgewater",
+          "Element",
+          "Excursion",
+          "Fieldblazer",
+          "Forager",
+          "Hale",
+          "Harvester",
+          "Leather Originals",
+          "Liberty",
+          "Mini Muck",
+          "Muck Apparel",
+          "Pathfinder",
+          "Muckmaster",
+          "Muckster II",
+          "Muckster Lite",
+          "Mudder",
+          "My First Muck",
+          "Originals",
+          "Outpost",
+          "Outscape",
+          "Outscape Max",
+          "Rainscape",
+          "Rover II",
+          "Rugged II",
+          "Wetland",
+          "Woody",
+        ],
+      };
+
+      function populateSelect(id, arr) {
+        const el = document.getElementById(id);
+        el.innerHTML = arr.map((v) => `<option>${v}</option>`).join("");
+      }
+
+      function populateFeatures() {
+        const box = document.getElementById("featuresBox");
+        box.innerHTML = features
+          .map((f) => {
+            const key = f.replace(/\s+/g, "_");
+            return `<label><input type=\"checkbox\" id=\"feat_${key}\"> ${f}</label>`;
+          })
+          .join(" ");
+      }
+
+      function populateSeries(brand) {
+        const list = document.getElementById("seriesList");
+        const data = seriesByBrand[brand] || [];
+        list.innerHTML = data
+          .map((v) => `<option value=\"${v}\"></option>`)
+          .join("");
+      }
+
       function autoCapitalize(text) {
         return text
-          .toLowerCase()
           .split(" ")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .map((w) => {
+            if (!w) return "";
+            if (w === "II") return "II";
+            return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+          })
           .join(" ");
       }
 
       function buildName() {
         const brand = document.getElementById("brand").value;
-        const seriesRaw = document.getElementById("series").value.trim();
-        const descriptorRaw = document
-          .getElementById("descriptor")
-          .value.trim();
-        const ev = document.getElementById("ev").checked;
-        const pullOn = document.getElementById("pullOn").checked;
-        const waterproof = document.getElementById("waterproof").checked;
+        const series = document.getElementById("series").value.trim();
+        const descriptor = document.getElementById("descriptor").value.trim();
+        const size = document.getElementById("sizeInches").value.trim();
         const toeType = document.getElementById("toeType").value;
         const category = document.getElementById("category").value;
         const code = document.getElementById("code").value.trim().toUpperCase();
 
-        const series = autoCapitalize(seriesRaw);
-        const descriptor = autoCapitalize(descriptorRaw);
-
         let parts = [];
-
         if (brand) parts.push(brand);
         if (series) parts.push(series);
-        if (ev) parts.push("EV");
+
+        features.forEach((f) => {
+          const key = f.replace(/\s+/g, "_");
+          const el = document.getElementById("feat_" + key);
+          if (el && el.checked) parts.push(f);
+        });
+
         if (descriptor) parts.push(descriptor);
-        if (pullOn) parts.push("Pull-On");
-        if (waterproof) parts.push("Waterproof");
+        if (size !== "") parts.push(`${size} Inch`);
         if (toeType) parts.push(toeType);
         if (category) parts.push(category);
         if (code) parts.push(code);
@@ -240,15 +279,13 @@
       }
 
       function generateName() {
-        const result = buildName();
         document.getElementById("output").innerText =
-          result || "Please fill required fields";
+          buildName() || "Please fill required fields";
       }
 
       function copyToClipboard() {
         const text = document.getElementById("output").innerText;
-        if (!text || text === "Your product name will appear here") return;
-
+        if (!text) return;
         navigator.clipboard.writeText(text).then(() => {
           const msg = document.getElementById("copiedMsg");
           msg.style.display = "block";
@@ -256,12 +293,39 @@
         });
       }
 
-      // Live preview
-      const inputs = document.querySelectorAll("input, select");
-      inputs.forEach((el) => {
-        el.addEventListener("input", generateName);
-        el.addEventListener("change", generateName);
-      });
+      function resetExceptBrand() {
+        document.getElementById("series").value = "";
+        document.getElementById("descriptor").value = "";
+        document.getElementById("sizeInches").value = "";
+        document.getElementById("toeType").value = "";
+        document.getElementById("category").value = "Boot";
+        document.getElementById("code").value = "";
+
+        features.forEach((f) => {
+          const key = f.replace(/\s+/g, "_");
+          const el = document.getElementById("feat_" + key);
+          if (el) el.checked = false;
+        });
+
+        generateName();
+      }
+
+      function init() {
+        populateSelect("brand", brands);
+        populateSelect("toeType", toeTypes);
+        populateSelect("category", categories);
+        populateFeatures();
+
+        const brandEl = document.getElementById("brand");
+        brandEl.addEventListener("change", () => populateSeries(brandEl.value));
+
+        populateSeries(brandEl.value);
+      }
+
+      document.addEventListener("input", generateName);
+      document.addEventListener("change", generateName);
+
+      init();
     </script>
   </body>
 </html>
